@@ -1,14 +1,13 @@
 {
-    "id": "",
-    "estimatedLaps": "",
-    "playerCar": "",
-    "playerIdx": "",
-    "playerTankSize": "",
-    "track": "",
-    "seresName": "",
-    "sessionLength": "",
-    "sessionTime": "",
-    "sessionRemaining": "",
-    "leaderAvgLapTime": ""
+    "id": "", // Create this
+    "estimatedLaps": "", // Need to calculate
+    "playerCar": "", // DriverInfo.Drivers[DriverInfo.DriverCarIdx].CarScreenNameShort
+    "playerIdx": "", // DriverInfo.DriverCarIdx
+    "playerTankSize": "", // Calculate this
+    "track": "", // WeekendInfo.TrackDisplayName
+    "seresName": "", // WeekendInfo.SeasonID
+    "sessionLength": "", // Might need to calculate or SessionInfo.Sessions[SessionInfo.CurrentSessionNum].SessionLaps
+    "sessionTime": "", // SessionInfo.Sessions[SessionInfo.CurrentSessionNum].SessionTime
+    "sessionRemaining": "", // Need to calculate
 }
 

@@ -1,11 +1,11 @@
 {
-    "id": "",
-    "name": "",
-    "localTimeZone": "",
-    "avavilabilitiesUTC": "",
-    "tags": [],
-    "averageLapTime": "",
-    "averageFuelUse": "",
+    "id": "", // DriverInfo.DriverUserID
+    "name": "", // DriverInfo.Drivers[DriverInfo.DriverCarIdx].UserName
+    "localTimeZone": "", // Provided by user
+    "avavilabilitiesUTC": "", // Provided by user
+    "tags": [], // Provided by user
+    "averageLapTime": "", // Need to calculate based off of stints
+    "averageFuelUse": "", // Need to calculate based off of stints
     "eventID": ""
 }
 

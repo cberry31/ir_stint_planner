@@ -1,13 +1,13 @@
 {
-    "id": "",
-    "estimatedStartTime": "",
-    "actualStartTime": "",
-    "estimatedEndTime": "",
-    "actualEndTime": "",
-    "estimatedFuelUsage": "",
-    "actualFueldUsage": "",
-    "estimatedLapCount": "",
-    "actualLapCount": "",
-    "fuelNeeded": ""
+    "id": "", // Create this
+    "estimatedStartTime": "", // Calculate this
+    "actualStartTime": "", // We either grab this from the API or get from user
+    "estimatedEndTime": "", // Calculate this
+    "actualEndTime": "", // Grab this from the API 
+    "estimatedFuelUsage": "", // Calculate this
+    "actualFueldUsage": "", // Calculate this with actual values
+    "estimatedLapCount": "", // Calculate this
+    "actualLapCount": "", // Might need to count this, or store first lap and last lap count
+    "fuelNeeded": "" // Calculate this
 }
 
