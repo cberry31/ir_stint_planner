@@ -6,20 +6,23 @@ from iracing import iRacing
 class Driver:
     def __init__(self) -> None:
         self.id = None
-        self.name = None
-        self.localTimeZone = None
-        self.avavilabilitiesUTC = None
-        self.tags = None
-        self.averageLapTime = None
-        self.averageFuelUse = None
+        self.name: str = ""
+        self.localTimeZone: str = "America/Chicago"
+        self.avavilabilitiesUTC: list = []
+        self.tags: list = []
+        self.averageLapTime: float = -1
+        self.averageFuelUse: float = -1
         self.eventID = None
-        self.lapTimes = []
-        self.fuelUseage = []
+        self.lapTimes: list = []
+        self.fuelUseage: list = []
         self.iracing = iRacing()
+        while not self.iracing.ir_connected:
+            self.iracing.check_iracing()
         self.getInitInformation()
 
     def calculateAverageLapTime(self):
-        self.averageLapTime = sum(self.lapTimes) / len(self.lapTimes)
+        if len(self.lapTimes) > 0:
+            self.averageLapTime = sum(self.lapTimes) / len(self.lapTimes)
         return self.averageLapTime
 
     def printDriverInfo(self):
@@ -38,12 +41,14 @@ class Driver:
         )
 
     def calculateAverageFuelUseage(self):
-        self.averageFuelUse = sum(self.fuelUseage) / len(self.fuelUseage)
+        if len(self.fuelUseage) > 0:
+            # The way we need to add to self.fuelUsage is by appending totalTankSize - reaminingFuel at end of lap
+            self.averageFuelUse = self.fuelUseage[-1] / len(self.fuelUseage)
         return self.averageFuelUse
 
     def getInitInformation(self):
         ir = self.iracing.ir
         driverInfo = ir["DriverInfo"]
         driverIdx = driverInfo["DriverCarIdx"]
-        self.id = driverInfo["id"]
+        self.id = driverInfo["Drivers"][driverIdx]["id"]
         self.name = driverInfo["Drivers"][driverIdx]["UserName"]

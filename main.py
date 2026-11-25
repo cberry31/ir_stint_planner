@@ -1,91 +1,67 @@
 import math
 import time
-from pprint import pprint
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from drivers import Driver
 from iracing import iRacing
 
 
-def loop():
-    t = ir["SessionTime"]
-    print("session time:", t)
-    laps = ir["CarIdxLapCompleted"]
+class StintPlanner:
+    def __init__(self):
+        self.irClass = iRacing()
+        self.ir = self.irClass.ir
+        self.driver = Driver()
 
-    # Variables that are needed for calculations
-    averageLapTime = ir["LapLastNLapTime"]  # Figure out how this works
-    print(f"AVERAGE LAP: {averageLapTime}")
-    totalTankSize = 0  # Need to find where this is
-    fuelLevel = ir["FuelLevel"]
-    fuelPerLap = 1  # TODO: Figure out the calculation for this
-    estimatedLapsInStint = math.floor(totalTankSize / fuelPerLap)
-    estimatedFuelRemainingAtEndStint = totalTankSize - (
-        fuelPerLap * estimatedLapsInStint
-    )
-    eventLength = ir["SessionTimeTotal"]
-    eventLengthRemaining = ir["SessionTimeRemain"]
-    leaderAverageLapTime = 1.5  # TODO: Calculate this out
+    def main(self):
+        self.irClass.check_iracing()
+        if self.irClass.ir_connected:
+            self.irClass.getFuelTankInfo()
+            self.driver.printDriverInfo()
+        self.lap = 0
+        try:
+            self.irClass.check_iracing()
+            if self.irClass.ir_connected:
+                self.fuelInfo = self.irClass.getFuelTankInfo()
+                self.fuelTank = self.fuelInfo["UsableFuelCapacity"]
+                self.loop()
+        except KeyboardInterrupt:
+            pass
 
-    if (
-        not isinstance(eventLength, float)
-        or not isinstance(eventLengthRemaining, float)
-        or not isinstance(averageLapTime, float)
-    ):
-        print("Event Length not float", eventLength)
-        print("Event Length Remaining not float", eventLengthRemaining)
-        print("Average Lap Time not float", averageLapTime)
-        return
+    def loop(self):
+        while True:
+            if self.ir["Lap"] > self.lap:
+                fuelLevel = self.ir["FuelLevel"]
+                print(self.ir["Lap"])
+                self.lap = self.ir["Lap"]
+                self.driver.lapTimes.append(self.ir["LapLastLapTime"])
+                self.driver.fuelUseage.append(self.fuelTank - fuelLevel)
+                self.driver.calculateAverageLapTime()
+                self.driver.calculateAverageFuelUseage()
+                if self.driver.averageFuelUse == 0 and self.fuelTank == 0:
+                    continue
+                self.calculateStintInfo(fuelLevel)
 
-    totalLaps = math.ceil(eventLength / leaderAverageLapTime)
-    remainingLaps = math.ceil(eventLengthRemaining / leaderAverageLapTime)
-    fuelNeeded = totalLaps * fuelPerLap
-    # stintLength = (
-    #     totalTankSize * fuelPerLap
-    # ) / averageLapTime  # This might need to be optimized on the formula
-    estimatedNextStintTime = 0  # Need to figure out calculation
-    # estimatedNumberOfStints = eventLength / stintLength
-    print(f"{fuelLevel} / {ir['DriverCarFuelMaxLtr']}")
-    print(ir["LapCompleted"])
-    print(ir["Drivers"])
-    print(ir["CarIdxLap"])
+            time.sleep(0.5)
 
-    # ir.session_info is a raw YAML string; load it into a Python dict
-    pprint(ir["SessionInfo"])
-    allSessions = ir["SessionInfo"]
-    currSessionIdx = allSessions.get("CurrentSessionNum", 0)
-    session_info = ir["SessionInfo"]["Sessions"][currSessionIdx]
-    pprint(session_info)
+    def calculateStintInfo(self, fuelLevel):
+        self.estimatedTotalLaps = math.floor(self.driver.averageFuelUse / self.fuelTank)
+        self.estimatedRemainingLaps = math.floor(self.driver.averageFuelUse / fuelLevel)
+        self.estimatedRemainingTime = (
+            self.estimatedRemainingLaps * self.driver.averageLapTime
+        )
+        self.estimatedEndOfStint = datetime.now(
+            ZoneInfo(self.driver.localTimeZone)
+        ) + timedelta(seconds=self.estimatedRemainingTime)
+
+    def printStintInfo(self):
+        print(f"Average Lap Time: {self.driver.averageLapTime}")
+        print(f"Average Fuel Useage: {self.driver.averageFuelUse}")
+        print(f"Laps on Tank: {self.estimatedTotalLaps}")
+        print(f"Remaining Laps on Tank: {self.estimatedRemainingLaps}")
+        print(f"Remaining Time on Tank: {self.estimatedRemainingTime}")
+        print(f"End of Stint: {self.estimatedEndOfStint}")
 
 
 if __name__ == "__main__":
-    irClass = iRacing()
-    ir = irClass.ir
-    driver = Driver()
-
-    print(ir.var_headers_names)
-
-    irClass.check_iracing()
-    if irClass.ir_connected:
-        irClass.getFuelTankInfo()
-        driver.printDriverInfo()
-    lap = 0
-
-    try:
-        while True:
-            irClass.check_iracing()
-            if irClass.ir_connected:
-                fuelInfo = irClass.getFuelTankInfo()
-                fuelTank = fuelInfo["UsableFuelCapacity"]
-                print(ir["Lap"])
-                if ir["Lap"] > lap:
-                    lap = ir["Lap"]
-                    driver.lapTimes.append(ir["LapLastLapTime"])
-                    print(f"Average Lap Time: {driver.calculateAverageLapTime()}")
-                    print(f"Average Fuel Useage: {driver.calculateAverageFuelUseage()}")
-                    if driver.averageFuelUse:
-                        print(
-                            f"Estimated Remaining Laps on Tank: {math.floor(driver.averageFuelUse / fuelTank)}"
-                        )
-                # loop()
-            time.sleep(1)
-    except KeyboardInterrupt:
-        pass
+    StintPlanner().main()

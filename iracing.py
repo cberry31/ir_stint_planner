@@ -15,6 +15,7 @@ class iRacing:
             self.last_car_setup_tick = -1
             self.ir.shutdown()
             print("irsdk disconnected")
+            return False
         elif (
             not self.ir_connected
             and self.ir.startup()
@@ -23,6 +24,7 @@ class iRacing:
         ):
             self.ir_connected = True
             print("irsdk connected")
+            return True
 
     def getFuelTankInfo(self):
         try:
